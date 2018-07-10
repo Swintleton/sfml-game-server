@@ -1,0 +1,32 @@
+﻿  Server.cpp
+d:\saves\c++\sfml\server\server\globals.h(22): warning C4091: 'static ': ignored on left of 'User' when no variable is declared
+d:\saves\c++\sfml\server\server\game.h(349): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\saves\c++\sfml\server\server\game.h(579): warning C4244: 'initializing': conversion from 'const float' to 'long', possible loss of data
+d:\saves\c++\sfml\server\server\game.h(580): warning C4244: 'initializing': conversion from 'const float' to 'long', possible loss of data
+d:\saves\c++\sfml\server\server\game.h(645): warning C4244: 'initializing': conversion from 'float' to 'long', possible loss of data
+d:\saves\c++\sfml\server\server\game.h(646): warning C4244: 'initializing': conversion from 'float' to 'long', possible loss of data
+d:\saves\c++\sfml\server\server\game.h(647): warning C4244: 'initializing': conversion from 'const float' to 'long', possible loss of data
+d:\saves\c++\sfml\server\server\game.h(648): warning C4244: 'initializing': conversion from 'const float' to 'long', possible loss of data
+d:\saves\c++\sfml\server\server\pathfinder.h(84): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+d:\saves\c++\sfml\server\server\pathfinder.h(85): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
+d:\saves\c++\sfml\server\server\pathfinder.h(114): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\saves\c++\sfml\server\server\pathfinder.h(116): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\saves\c++\sfml\server\server\pathfinder.h(137): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\saves\c++\sfml\server\server\pathfinder.h(142): warning C4244: 'argument': conversion from 'float' to 'const int', possible loss of data
+d:\saves\c++\sfml\server\server\command_enforcer.h(15): warning C4244: 'initializing': conversion from 'const float' to 'sf::Int64', possible loss of data
+d:\saves\c++\sfml\server\server\command_enforcer.h(16): warning C4244: 'initializing': conversion from 'const float' to 'sf::Int64', possible loss of data
+d:\saves\c++\sfml\server\server\command_enforcer.h(24): warning C4244: 'argument': conversion from 'sf::Int64' to 'float', possible loss of data
+d:\saves\c++\sfml\server\server\command_enforcer.h(331): warning C4244: 'argument': conversion from 'sf::Int64' to 'float', possible loss of data
+d:\saves\c++\sfml\server\server\command_enforcer.h(461): warning C4244: 'argument': conversion from 'sf::Int64' to 'float', possible loss of data
+d:\saves\c++\sfml\server\server\dropper.h(43): warning C4244: '=': conversion from 'float' to 'long', possible loss of data
+d:\saves\c++\sfml\server\server\dropper.h(44): warning C4244: '=': conversion from 'float' to 'long', possible loss of data
+d:\saves\c++\sfml\server\server\dropper.h(46): warning C4244: 'argument': conversion from 'long' to 'float', possible loss of data
+d:\saves\c++\sfml\server\server\commands.h(5): warning C4129: '/': unrecognized character escape sequence
+d:\saves\c++\sfml\server\server\commands.h(11): warning C4129: '/': unrecognized character escape sequence
+d:\saves\c++\sfml\server\server\commands.h(22): warning C4129: '/': unrecognized character escape sequence
+d:\saves\c++\sfml\server\server\commands.h(53): warning C4129: '/': unrecognized character escape sequence
+d:\saves\c++\sfml\server\server\commands.h(63): warning C4129: '/': unrecognized character escape sequence
+d:\saves\c++\sfml\server\server\commands.h(92): warning C4129: '/': unrecognized character escape sequence
+d:\saves\c++\sfml\server\server\commands.h(114): warning C4129: '/': unrecognized character escape sequence
+d:\saves\c++\sfml\server\server\commands.h(124): warning C4129: '/': unrecognized character escape sequence
+  Server.vcxproj -> D:\Saves\C++\SFML\Server\Debug\Server.exe
