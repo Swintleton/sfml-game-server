@@ -43,7 +43,7 @@ struct Dropper {
 				x = target_x + (std::rand() % 121) - 60;
 				y = target_y + (std::rand() % 121) - 60;
 
-				items.push_back(new Item(ItemID++, possible_items[index], x, y));
+				items.push_back(Item(ItemID++, possible_items[index], x, y));
 				broadcast_New_Item(items.back());
 
 				++stepper;

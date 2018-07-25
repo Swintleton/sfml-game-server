@@ -10,7 +10,7 @@ void gameLoop() {
 
 	unsigned int stepper_daemon;
 
-	Target* listened;
+	Target *listened;
 	Dropper drop_Daemon(2);
 
 	float heal;
@@ -22,32 +22,35 @@ void gameLoop() {
 		time += deltaTime;
 
 		//Handle players
-		for (Player *p : players) {
-			//Player is targetable?
-			p->targetable = true;
-			for (Safezone *s : safezones) {
-				if (p->collisionRect.getGlobalBounds().intersects(s->rc.getGlobalBounds())) {
-					p->targetable = false;
-					break;
+		for (Player &p : players) {
+			if (!p.dead) {
+				//Player is targetable?
+				p.targetable = true;
+				for (Safezone &s : safezones) {
+					if (p.collisionRect.getGlobalBounds().intersects(s.rc.getGlobalBounds())) {
+						p.targetable = false;
+						break;
+					}
 				}
-			}
 
-			Target t = p->updateAttack(deltaTime);
-			if (t.type == 2) {
-				Daemon *damaged_Daemon = static_cast<Daemon *>(t.targetRef);
-				if (damaged_Daemon != nullptr && !damaged_Daemon->dead) {
-					//Simple attack
-					damaged_Daemon->health -= p->dmg;
+				Target t = p.updateAttack(deltaTime);
+				if (t.type == 2) {
+					Daemon *damaged_Daemon = static_cast<Daemon *>(t.targetRef);
+					if (damaged_Daemon != nullptr && !damaged_Daemon->dead) {
+						//Simple attack
+						damaged_Daemon->health -= p.dmg;
 
-					damaged_Daemon->doBeenHit = true;
+						damaged_Daemon->doBeenHit = true;
 
-					//Broadcast Damage Happend
-					broadcast_Damage_Taken_Daemon(damaged_Daemon, p->dmg);
+						//Broadcast Damage Happend
+						broadcast_Damage_Taken_Daemon(*damaged_Daemon, p.dmg);
 
-					//Daemon died?
-					if (damaged_Daemon->health <= 0) {
-						damaged_Daemon->dead = true;
-						broadcast_Die_Daemon(damaged_Daemon);
+						//Daemon died?
+						if (damaged_Daemon->health <= 0) {
+							damaged_Daemon->dead = true;
+							Player_Target_List_Remove(*damaged_Daemon);
+							broadcast_Die_Daemon(*damaged_Daemon);
+						}
 					}
 				}
 			}
@@ -55,47 +58,47 @@ void gameLoop() {
 
 		//Daemon AI
 		stepper_daemon = 0;
-		for (Daemon *d : daemons) {
+		for (Daemon &d : daemons) {
 			//If daemon live
-			if (!d->dead) {
+			if (!d.dead) {
 				//Been hit
-				if (d->doBeenHit) {
-					d->normalAttack.active = false;
-					d->beenHitTime += deltaTime;
-					if (d->beenHitTime > 1) {
-						d->beenHitTime = 0;
-						d->doBeenHit = false;
+				if (d.doBeenHit) {
+					d.normalAttack.active = false;
+					d.beenHitTime += deltaTime;
+					if (d.beenHitTime > 1) {
+						d.beenHitTime = 0;
+						d.doBeenHit = false;
 					}
 				}
 
 				//Update attack
-				Target t = d->updateAttack(deltaTime);
+				Target t = d.updateAttack(deltaTime);
 				//The target is a player?
-				if (t.targetRef != nullptr && t.type == 1) {
+				if (t.targetRef && t.targetRef != nullptr && t.type == 1) {
 					Player *damaged_Player = static_cast<Player *>(t.targetRef);
 					if (damaged_Player != nullptr && !damaged_Player->dead) {
 						//Simple attack
-						damaged_Player->health -= d->dmg;
+						damaged_Player->health -= d.dmg;
 
 						//Broadcast Damage Happend
-						broadcast_Damage_Taken_Player(damaged_Player, d->dmg);
+						broadcast_Damage_Taken_Player(*damaged_Player, d.dmg);
 
 						//Player died?
 						if (damaged_Player->health <= 0) {
 							damaged_Player->dead = true;
-							boradcast_Die_Player(damaged_Player);
+							boradcast_Die_Player(*damaged_Player);
 							//Lost target
-							d->target = Target();
-							d->path = std::vector<sf::Vector2f>();
+							d.target = Target();
+							d.path = std::vector<sf::Vector2f>();
 						}
 					}
 				}
 
 				//Attack when a player is inside the range
-				for(Player *p : players)
-					if (!p->dead && d->normalAttack.collisionRect.getGlobalBounds().intersects(p->collisionRect.getGlobalBounds())) {
+				for (Player &p : players)
+					if (!p.dead && d.normalAttack.collisionRect.getGlobalBounds().intersects(p.collisionRect.getGlobalBounds())) {
 						//attack
-						if (d->attack()) {
+						if (d.attack()) {
 							broadcast_Attack_Daemon(d);
 							break;	//Daemon hit 1 player at the time
 						}
@@ -103,54 +106,54 @@ void gameLoop() {
 
 				if (players.size() > 0) {
 					//If have no target yet
-					if (d->target.targetRef == nullptr) {
+					if (d.target.targetRef == nullptr) {
 						//Listen
-						listened = d->listen();
+						listened = d.listen();
 						if (listened != nullptr) {
-							d->target = *listened;
-							d->targetUnseen_Time = 0;
+							d.target = *listened;
+							d.targetUnseen_Time = 0;
 						}
 					}
-					else {
+					else{
 						//If the path is empty or the path end is far from to the target
-						if (d->path.size() < 1 || std::abs(d->path[0].x - d->target.collisionRect->getPosition().x) > 12 && std::abs(d->path[0].y - d->target.collisionRect->getPosition().y) > 18)
+						if (d.path.size() < 1 || std::abs(d.path[0].x - d.target.collisionRect->getPosition().x) > 12 && std::abs(d.path[0].y - d.target.collisionRect->getPosition().y) > 18)
 							//Set new path
-							d->path = findPath(d->collisionRect.getPosition(), d->target.collisionRect->getPosition());
+							d.path = findPath(d.collisionRect.getPosition(), d.target.collisionRect->getPosition());
 
 						//Move
-						if (d->normalAttack.ready && !d->doBeenHit && d->move(deltaTime))
+						if (d.normalAttack.ready && !d.doBeenHit && d.move(deltaTime))
 							broadcast_Daemon_Moved(d);
 
 						//The target is trackable?
-						listened = d->listen();
+						listened = d.listen();
 						if (listened != nullptr && listened->targetRef != nullptr) {
 							//Daemon sees the target
-							d->targetUnseen_Time = 0;
-							if (listened->targetRef != d->target.targetRef)
-								d->target = *listened;
+							d.targetUnseen_Time = 0;
+							if (listened->targetRef != d.target.targetRef)
+								d.target = *listened;
 						}
 						//Target unseen
 						else
-							d->targetUnseen_Time += deltaTime;
-						if (d->targetUnseen_Time > 8) {
+							d.targetUnseen_Time += deltaTime;
+						if (d.targetUnseen_Time > 8) {
 							//Lost target
-							d->target = Target();
-							d->path = std::vector<sf::Vector2f>();
+							d.target = Target();
+							d.path.clear();
 						}
 					}
 				}
 			}
 			//Daemon dies
 			else {
-				d->dead_Time += deltaTime;
-				if (!d->dropped && d->dead_Time > 2) {
-					d->dropped = true;
-					drop_Daemon.drop(d->collisionRect.getPosition().x, d->collisionRect.getPosition().y);
+				d.dead_Time += deltaTime;
+				if (!d.dropped && d.dead_Time > 2) {
+					d.dropped = true;
+					drop_Daemon.drop(d.collisionRect.getPosition().x, d.collisionRect.getPosition().y);
 				}
-				if (d->dead_Time > 5) {
+				if (d.dead_Time > 5) {
 					//Delete daemon
 					broadcast_Daemon_Deleted(d);
-					std::cout << d->id << ". daemon died, remaining daemons: " << daemons.size()-1 << std::endl;
+					std::cout << d.id << ". daemon died, remaining daemons: " << daemons.size() - 1 << std::endl;
 					daemons.erase(daemons.begin() + stepper_daemon);
 				}
 			}
@@ -158,15 +161,15 @@ void gameLoop() {
 		}
 
 		//Regenerators AI
-		for (Regenerator *r : regenerators) {
-			for (Player *p : players) {
-				if (r->rc.getGlobalBounds().intersects(p->collisionRect.getGlobalBounds())) {
-					r->time += deltaTime;
-					if (r->type == 0 && r->time > 1) {
-						if (p->health < p->maxHealth) {
-							heal = p->maxHealth / 10;
-							r->time = 0;
-							p->health += heal;
+		for (Regenerator &r : regenerators) {
+			for (Player &p : players) {
+				if (r.rc.getGlobalBounds().intersects(p.collisionRect.getGlobalBounds())) {
+					r.time += deltaTime;
+					if (r.type == 0 && r.time > 1) {
+						if (p.health < p.maxHealth) {
+							heal = p.maxHealth / 10;
+							r.time = 0;
+							p.health += heal;
 							broadcast_Healed_Player(p, heal);
 						}
 					}

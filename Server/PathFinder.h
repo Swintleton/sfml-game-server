@@ -9,10 +9,13 @@ struct Node {
 	int G;
 	//distance from end point
 	int F;
-	Node *parent;
+	int i;
+	
+	Node()
+	{}
 
-	Node(int x, int y, int G, int F, Node *parent = nullptr)
-		: x(x), y(y), G(G), F(F), parent(parent)
+	Node(int x, int y, int G, int F, int i = -1)
+		: x(x), y(y), G(G), F(F), i(i)
 	{}
 
 	//Estimate the remaining distance to the goal
@@ -57,12 +60,12 @@ namespace path {
 	std::vector<Node> openList;
 	std::vector<Node> closedList;
 	unsigned int openListIndex;
-	static Node* selectedNode;
-	static Node* neighborNode;
+	Node selectedNode;
+	Node neighborNode;
 	unsigned int i, j;
 	bool free;
 
-	sf::RectangleShape collisionRect;	//How big you are
+	sf::RectangleShape collisionRect;	//Your size in the map
 }
 
 std::vector<sf::Vector2f> findPath(sf::Vector2f start, sf::Vector2f end)
@@ -81,10 +84,9 @@ std::vector<sf::Vector2f> findPath(sf::Vector2f start, sf::Vector2f end)
 		return path::path;
 
 	//Create the start node and push into the openList
-	path::selectedNode = new Node(start.x, start.y, 0, 0);
-	path::selectedNode->updateF(end.x, end.y);
-	path::openList.push_back(*path::selectedNode);
-	delete path::selectedNode;
+	path::selectedNode = Node(start.x, start.y, 0, 0);
+	path::selectedNode.updateF(end.x, end.y);
+	path::openList.push_back(path::selectedNode);
 
 	while (!path::openList.empty())
 	{
@@ -93,63 +95,62 @@ std::vector<sf::Vector2f> findPath(sf::Vector2f start, sf::Vector2f end)
 		for (path::i = 1; path::i < path::openList.size(); ++path::i)
 			if (path::openList[path::i].F < path::openList[path::openListIndex].F)
 				path::openListIndex = path::i;
-		path::selectedNode = new Node(path::openList[path::openListIndex].x, path::openList[path::openListIndex].y, path::openList[path::openListIndex].G, path::openList[path::openListIndex].F, path::openList[path::openListIndex].parent);
+		path::selectedNode = path::openList[path::openListIndex];
 
+		//Add to selectedNode closedList
+		path::closedList.push_back(path::selectedNode);
 		//Delete selectedNode from openList
 		path::openList.erase(path::openList.begin() + path::openListIndex);
-		//Add to selectedNode closedList
-		path::closedList.push_back(*path::selectedNode);
 
 		//If it's stuck somehow...
 		if (path::closedList.size() > 50) {
-			delete path::selectedNode;
 			return path::path;
 		}
 
 		//selectedNode is the endNode?
-		if (std::abs(end.x - path::selectedNode->x) < 21 && abs(end.y - path::selectedNode->y) < 31)
+		if (std::abs(end.x - path::selectedNode.x) < 21 && abs(end.y - path::selectedNode.y) < 31)
 		{
 			//Generate the path from finish to start
-			Node* parent = &path::closedList.back();
-			path::path.push_back(sf::Vector2f(parent->x, parent->y));
-			while (parent->parent != nullptr) {
-				path::path.push_back(sf::Vector2f(parent->x, parent->y));
-				parent = parent->parent;
+			Node parent = path::closedList.back();
+			path::path.push_back(sf::Vector2f(parent.x, parent.y));
+			while (parent.i != -1) {
+				path::path.push_back(sf::Vector2f(parent.x, parent.y));
+				parent = path::closedList[parent.i];
 			}
 
-			delete path::selectedNode;
 			return path::path;
 		}
 
 		//Generate nodes in all possible directions (from the selectedNode)
 		for (path::i = 0; path::i < 8; ++path::i)
 		{
+			
+			//Generate neighbor
+			path::neighborNode = Node(path::selectedNode.x + path::xDirections[path::i], path::selectedNode.y + path::yDirections[path::i], path::i < 4 ? 10 : 14, path::selectedNode.F, path::closedList.size()-1);
+			path::neighborNode.updateF(end.x, end.y);
+
 			//Neighbor on the closedList?
 			path::free = true;
 			for (path::j = 0; path::j < path::closedList.size(); ++path::j)
-				if (path::closedList[path::j].x == path::selectedNode->x + path::xDirections[path::i] && path::closedList[path::j].y == path::selectedNode->y + path::yDirections[path::i]) {
+				if (path::closedList[path::j].x == path::neighborNode.x && path::closedList[path::j].y == path::neighborNode.y) {
 					path::free = false;
 					break;
 				}
 			if (!path::free) continue;
 
 			//Block check
-			path::collisionRect.setPosition(path::selectedNode->x + path::xDirections[path::i], path::selectedNode->y + path::yDirections[path::i]);
+			path::collisionRect.setPosition(path::neighborNode.x, path::neighborNode.y);
 			if (collisionHappend(path::collisionRect)) continue;
-
-			//Generate neighbor
-			path::neighborNode = new Node(path::selectedNode->x + path::xDirections[path::i], path::selectedNode->y + path::yDirections[path::i], path::i < 4 ? 10 : 14, path::selectedNode->F, path::selectedNode);
-			path::neighborNode->updateF(end.x, end.y);
 
 			//It is on the openList?
 			path::free = false;
 			for (path::j = 0; path::j < path::openList.size(); ++path::j) {
-				if (path::openList[path::j].x == path::neighborNode->x && path::openList[path::j].y == path::neighborNode->y) {
+				if (path::openList[path::j].x == path::neighborNode.x && path::openList[path::j].y == path::neighborNode.y) {
 					path::free = true;
 					//New F is lower, than the old?
-					if (path::openList[path::j].F > path::neighborNode->F) {
-						path::openList[path::j].F = path::neighborNode->F;
-						path::openList[path::j].parent = path::selectedNode;
+					if (path::openList[path::j].F > path::neighborNode.F) {
+						path::openList[path::j].F = path::neighborNode.F;
+						path::openList[path::j].i = path::closedList.size()-1;
 					}
 					break;
 				}
@@ -157,10 +158,8 @@ std::vector<sf::Vector2f> findPath(sf::Vector2f start, sf::Vector2f end)
 				
 			//If it is not in the open list then add into that
 			if(!path::free)
-				path::openList.push_back(*path::neighborNode);
-			delete path::neighborNode;
+				path::openList.push_back(path::neighborNode);
 		}
 	}
-	delete path::selectedNode;
 	return path::path;
 }
